@@ -326,7 +326,7 @@ Handle<Value> Proxy::proxyConstructor(const Arguments& args)
 
 	Handle<Function> constructor = Handle<Function>::Cast(prototype->Get(constructorSymbol));
 	//jclass javaClass = (jclass) External::Unwrap(constructor->Get(javaClassSymbol));
-	jclass javaClass = (jclass) QuickUnwrap(constructor->Get(javaClassSymbol));
+	jclass javaClass = (jclass) External::Cast(*constructor->Get(javaClassSymbol))->Value();
 
 	JNIUtil::logClassName("Create proxy: %s", javaClass);
 
