@@ -109,9 +109,11 @@ public final class ${config['classname']}Application extends TiApplication
 	@Override
 	public void verifyCustomModules(TiRootActivity rootActivity)
 	{
+	/*
 		% if config['deploy_type'] != 'production':
 		org.appcelerator.titanium.TiVerify verify = new org.appcelerator.titanium.TiVerify(rootActivity, this);
 		verify.verify();
 		% endif
+		*/
 	}
 }
