@@ -71,7 +71,7 @@ java_keywords = [
 
 MIN_API_LEVEL = 10
 HONEYCOMB_MR2_LEVEL = 13
-KNOWN_ABIS = ("armeabi", "armeabi-v7a", "x86")
+KNOWN_ABIS = ("armeabi", "armeabi-v7a", "x86","mips")
 
 # Used only to find <script> tags in HTML files
 # so we can be sure to package referenced JS files
@@ -1702,11 +1702,12 @@ class Builder(object):
 			if abi == 'x86' and ((not os.path.exists(lib_source_dir)) or self.deploy_type == 'production'):
 				# x86 only in non-production builds for now.
 				continue
-
-			# libtiverify is always included
-			apk_zip.write(os.path.join(lib_source_dir, 'libtiverify.so'), lib_dest_dir + 'libtiverify.so')
-			# profiler
-			apk_zip.write(os.path.join(lib_source_dir, 'libtiprofiler.so'), lib_dest_dir + 'libtiprofiler.so')
+			
+			if abi != 'mips':
+				# libtiverify is always included
+				apk_zip.write(os.path.join(lib_source_dir, 'libtiverify.so'), lib_dest_dir + 'libtiverify.so')
+				# profiler
+				apk_zip.write(os.path.join(lib_source_dir, 'libtiprofiler.so'), lib_dest_dir + 'libtiprofiler.so')
 
 			for fname in ('libkroll-v8.so', 'libstlport_shared.so'):
 				apk_zip.write(os.path.join(lib_source_dir, fname), lib_dest_dir + fname)
