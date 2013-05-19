@@ -199,7 +199,8 @@ jobject ProxyFactory::unwrapJavaProxy(const Arguments& args)
 	if (args.Length() != 1)
 		return NULL;
 	Local<Value> firstArgument = args[0];
-	return firstArgument->IsExternal() ? (jobject)External::Unwrap(firstArgument) : NULL;
+	//return firstArgument->IsExternal() ? (jobject)External::Unwrap(firstArgument) : NULL;
+	return firstArgument->IsExternal() ? (jobject)QuickUnwrap(firstArgument) : NULL;
 }
 
 void ProxyFactory::registerProxyPair(jclass javaProxyClass, FunctionTemplate* v8ProxyTemplate, bool createDeprecated)

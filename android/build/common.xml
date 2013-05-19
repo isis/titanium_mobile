@@ -679,11 +679,12 @@ Common ant tasks and macros for building Android-based Titanium modules and proj
 		<mkdir dir="${dist.libv8.dir}"/>
 
 		<ti.jsonMap file="${dist.libv8.dir}/libv8.json" prefix="libv8.current"/>
-
+<!--
 		<condition property="libv8.latest">
 			<equals arg1="${libv8.current.version}" arg2="${libv8.version}"/>
 		</condition>
 		<antcall target="download.libv8"/>
+		-->
 	</target>
 
 	<target name="download.libv8" unless="libv8.latest">

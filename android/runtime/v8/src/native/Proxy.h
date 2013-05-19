@@ -14,6 +14,15 @@
 
 namespace titanium {
 
+inline
+void* QuickUnwrap(Handle<v8::Value> wrapper) {
+  typedef internal::Object O;
+  O* obj = *reinterpret_cast<O**>(const_cast<v8::Value*>(*wrapper));
+      const uintptr_t address = reinterpret_cast<uintptr_t>(obj);
+    //return reinterpret_cast<void*>(address >> kPointerToSmiShift);
+    return reinterpret_cast<void*>(address);
+}
+
 class Proxy : public JavaObject
 {
 public:
@@ -103,7 +112,8 @@ public:
 			return NULL;
 		}
 
-		void *ptr = value->GetPointerFromInternalField(0);
+		//void *ptr = value->GetPointerFromInternalField(0);
+		void *ptr = value->GetAlignedPointerFromInternalField(0);
 		if (!ptr) {
 			return NULL;
 		}

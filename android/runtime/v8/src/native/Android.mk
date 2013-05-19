@@ -22,9 +22,10 @@ LOCAL_SRC_FILES := $(SRC_FILES)
 
 LOCAL_JS_FILES := $(JS_FILES)
 
-LOCAL_STATIC_LIBRARIES := libv8
+LOCAL_STATIC_LIBRARIES := libv8 libv8_snapshot
 
 include $(BUILD_SHARED_LIBRARY)
 
 NDK_MODULE_PATH := $(LOCAL_PATH)/../ndk-modules
 $(call import-module,libv8)
+$(call import-module,libv8_snapshot)

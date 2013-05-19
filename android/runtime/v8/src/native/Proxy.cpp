@@ -55,7 +55,9 @@ void Proxy::bindProxy(Handle<Object> exports)
 	proxyTemplate->SetClassName(proxySymbol);
 	proxyTemplate->Inherit(EventEmitter::constructorTemplate);
 
-	proxyTemplate->Set(javaClassSymbol, External::Wrap(JNIUtil::krollProxyClass),
+//	proxyTemplate->Set(javaClassSymbol, External::Wrap(JNIUtil::krollProxyClass),
+//		PropertyAttribute(DontDelete | DontEnum));
+	proxyTemplate->Set(javaClassSymbol, External::New(JNIUtil::krollProxyClass),
 		PropertyAttribute(DontDelete | DontEnum));
 
 	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "_hasListenersForEventType", hasListenersForEventType);
@@ -297,7 +299,8 @@ Handle<FunctionTemplate> Proxy::inheritProxyTemplate(
 {
 	HandleScope scope;
 
-	Local<Value> wrappedClass = External::Wrap(javaClass);
+	//Local<Value> wrappedClass = External::Wrap(javaClass);
+	Local<Value> wrappedClass = External::New(javaClass);
 	Local<FunctionTemplate> inheritedTemplate = FunctionTemplate::New(proxyConstructor, callback);
 
 	inheritedTemplate->Set(javaClassSymbol, wrappedClass, PropertyAttribute(DontDelete | DontEnum));
@@ -322,7 +325,8 @@ Handle<Value> Proxy::proxyConstructor(const Arguments& args)
 	Handle<Object> prototype = jsProxy->GetPrototype()->ToObject();
 
 	Handle<Function> constructor = Handle<Function>::Cast(prototype->Get(constructorSymbol));
-	jclass javaClass = (jclass) External::Unwrap(constructor->Get(javaClassSymbol));
+	//jclass javaClass = (jclass) External::Unwrap(constructor->Get(javaClassSymbol));
+	jclass javaClass = (jclass) QuickUnwrap(constructor->Get(javaClassSymbol));
 
 	JNIUtil::logClassName("Create proxy: %s", javaClass);
 

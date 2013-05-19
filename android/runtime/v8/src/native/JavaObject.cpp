@@ -37,7 +37,8 @@ static struct {
 #define UPDATE_STATS(total, detached)
 #endif
 
-static void DetachCallback(v8::Persistent<v8::Value> value, void *data)
+//static void DetachCallback(v8::Persistent<v8::Value> value, void *data)
+static void DetachCallback(Isolate* isolate, v8::Persistent<v8::Value> value, void *data)
 {
 	JavaObject *javaObject = static_cast<JavaObject*>(data);
 	javaObject->detach();
@@ -98,7 +99,8 @@ jobject JavaObject::getJavaObject()
 				LOGE(TAG, "Java object reference has been invalidated.");
 			}
 			isWeakRef_ = false;
-			handle_.MakeWeak(this, DetachCallback);
+			//handle_.MakeWeak(this, DetachCallback);
+			handle_.MakeWeak(Isolate::GetCurrent(), this, DetachCallback);
 			return javaObject;
 		}
 		return ReferenceTable::getReference(refTableKey_);
@@ -155,7 +157,8 @@ void JavaObject::wrap(Handle<Object> jsObject)
 	ASSERT(handle_.IsEmpty());
 	ASSERT(jsObject->InternalFieldCount() > 0);
 	handle_ = v8::Persistent<v8::Object>::New(jsObject);
-	handle_->SetPointerInInternalField(0, this);
+	//handle_->SetPointerInInternalField(0, this);
+	handle_->SetAlignedPointerInInternalField(0, this);
 }
 
 void JavaObject::attach(jobject javaObject)
@@ -163,7 +166,8 @@ void JavaObject::attach(jobject javaObject)
 	ASSERT((javaObject && javaObject_ == NULL) || javaObject == NULL);
 	UPDATE_STATS(0, -1);
 
-	handle_.MakeWeak(this, DetachCallback);
+	//handle_.MakeWeak(this, DetachCallback);
+	handle_.MakeWeak(Isolate::GetCurrent(), this, DetachCallback);
 	handle_.MarkIndependent();
 
 	if (javaObject) {
@@ -174,7 +178,8 @@ void JavaObject::attach(jobject javaObject)
 
 void JavaObject::detach()
 {
-	handle_.MakeWeak(this, DetachCallback);
+	//handle_.MakeWeak(this, DetachCallback);
+	handle_.MakeWeak(Isolate::GetCurrent(), this, DetachCallback);
 
 	if (isDetached()) {
 		return;

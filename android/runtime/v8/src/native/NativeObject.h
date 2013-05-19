@@ -10,6 +10,8 @@
 #ifndef NATIVEOBJECT_H_
 #define NATIVEOBJECT_H_
 
+using namespace v8;
+
 #include <v8.h>
 #include <assert.h>
 
@@ -47,7 +49,8 @@ public:
 		assert(!handle.IsEmpty());
 		assert(handle->InternalFieldCount() > 0);
 
-		return static_cast<T*>(handle->GetPointerFromInternalField(0));
+		//return static_cast<T*>(handle->GetPointerFromInternalField(0));
+		return static_cast<T*>(handle->GetAlignedPointerFromInternalField(0));		
 	}
 
 	v8::Persistent<v8::Object> handle_; // ro
@@ -58,13 +61,15 @@ protected:
 		assert(handle_.IsEmpty());
 		assert(handle->InternalFieldCount() > 0);
 		handle_ = v8::Persistent<v8::Object>::New(handle);
-		handle_->SetPointerInInternalField(0, this);
+		//handle_->SetPointerInInternalField(0, this);
+		handle_->SetAlignedPointerInInternalField(0, this);
 		MakeWeak();
 	}
 
 	inline void MakeWeak(void)
 	{
-		handle_.MakeWeak(this, WeakCallback);
+		//handle_.MakeWeak(this, WeakCallback);
+		handle_.MakeWeak(Isolate::GetCurrent(), this, WeakCallback);
 		handle_.MarkIndependent();
 	}
 
@@ -101,7 +106,8 @@ protected:
 	int refs_; // ro
 
 private:
-	static void WeakCallback(v8::Persistent<v8::Value> value, void *data)
+//	static void WeakCallback(v8::Persistent<v8::Value> value, void *data)
+	static void WeakCallback(Isolate* isolate, v8::Persistent<v8::Value> value, void *data)
 	{
 		NativeObject *obj = static_cast<NativeObject*>(data);
 		assert(value == obj->handle_);
