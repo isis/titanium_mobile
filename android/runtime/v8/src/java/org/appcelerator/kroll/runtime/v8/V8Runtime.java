@@ -68,7 +68,7 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 
 		if (deployData.isDebuggerEnabled()) {
 			dispatchDebugMessages();
-		} else if (deployData.isProfilerEnabled()) {
+		} /* else if (deployData.isProfilerEnabled()) {
 			try {
 				Class<?> clazz = Class.forName("org.appcelerator.titanium.profiler.TiProfiler");
 				Method method = clazz.getMethod("startProfiler", new Class[0]);
@@ -76,7 +76,7 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 			} catch (Exception e) {
 				Log.e(TAG, "Unable to load profiler.", e);
 			}
-		}
+		}*/
 
 		loadExternalModules();
 		loadExternalCommonJsModules();
