@@ -42,7 +42,7 @@ using namespace v8;
 
 <#assign className = Proxy.className(proxyClassName)>
 
-Persistent<FunctionTemplate> ${className}::proxyTemplate = Persistent<FunctionTemplate>::New(V8Runtime::isolate);
+Persistent<FunctionTemplate> ${className}::proxyTemplate = Persistent<FunctionTemplate>();
 jclass ${className}::javaClass = NULL;
 
 ${className}::${className}(jobject javaObject) : titanium::Proxy(javaObject)
@@ -72,7 +72,7 @@ void ${className}::dispose()
 	LOGD(TAG, "dispose()");
 	if (!proxyTemplate.IsEmpty()) {
 		proxyTemplate.Dispose(V8Runtime::isolate);
-		proxyTemplate = Persistent<FunctionTemplate>::New(V8Runtime::isolate);
+		proxyTemplate = Persistent<FunctionTemplate>();
 	}
 
 	<#if superProxyClassName??>
