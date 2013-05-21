@@ -141,6 +141,7 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 	public void doDispose()
 	{
 		TiDeployData deployData = getKrollApplication().getDeployData();
+		/*
 		if (deployData.isProfilerEnabled()) {
 			try {
 				Class<?> clazz = Class.forName("org.appcelerator.titanium.profiler.TiProfiler");
@@ -149,7 +150,7 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 			} catch (Exception e) {
 				Log.e(TAG, "Unable to stop profiler.", e);
 			}
-		}
+		}*/
 		nativeDispose();
 	}
 
