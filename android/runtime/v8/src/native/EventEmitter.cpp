@@ -40,7 +40,9 @@ Handle<Value> EventEmitter::eventEmitterConstructor(const Arguments& args)
 void EventEmitter::initTemplate()
 {
 	HandleScope scope;
-	constructorTemplate = Persistent<FunctionTemplate>::New(FunctionTemplate::New(eventEmitterConstructor));
+	constructorTemplate = Persistent<FunctionTemplate>::New(
+		V8Runtime::isolate,
+		FunctionTemplate::New(eventEmitterConstructor));
 	constructorTemplate->InstanceTemplate()->SetInternalFieldCount(1);
 	constructorTemplate->SetClassName(String::NewSymbol("EventEmitter"));
 
@@ -50,13 +52,13 @@ void EventEmitter::initTemplate()
 
 void EventEmitter::dispose()
 {
-	constructorTemplate.Dispose();
+	constructorTemplate.Dispose(V8Runtime::isolate);
 	constructorTemplate = Persistent<FunctionTemplate>();
 
-	eventsSymbol.Dispose();
+	eventsSymbol.Dispose(V8Runtime::isolate);
 	eventsSymbol = Persistent<String>();
 
-	emitSymbol.Dispose();
+	emitSymbol.Dispose(V8Runtime::isolate);
 	emitSymbol = Persistent<String>();
 }
 

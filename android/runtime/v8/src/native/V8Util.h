@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <v8.h>
 
+#include "V8Runtime.h"
+
 #define ENTER_V8(context) \
 	v8::HandleScope scope;
 
@@ -22,7 +24,7 @@
 	string_literal, length)
 
 #define SYMBOL_LITERAL(string_literal) \
-	v8::Persistent<v8::String>::New(v8::String::NewSymbol(string_literal ""))
+	v8::Persistent<v8::String>::New(V8Runtime::isolate, v8::String::NewSymbol(string_literal ""))
 
 #define DEFINE_CONSTANT(target, name, value) \
 	(target)->Set(v8::String::NewSymbol(name), \

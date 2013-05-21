@@ -65,7 +65,7 @@ void Proxy::bindProxy(Handle<Object> exports)
 	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "_onEventFired", onEventFired);
 
 
-	baseProxyTemplate = Persistent<FunctionTemplate>::New(proxyTemplate);
+	baseProxyTemplate = Persistent<FunctionTemplate>::New(V8Runtime::isolate, proxyTemplate);
 
 	exports->Set(proxySymbol, proxyTemplate->GetFunction());
 }
@@ -325,8 +325,8 @@ Handle<Value> Proxy::proxyConstructor(const Arguments& args)
 	Handle<Object> prototype = jsProxy->GetPrototype()->ToObject();
 
 	Handle<Function> constructor = Handle<Function>::Cast(prototype->Get(constructorSymbol));
-	//jclass javaClass = (jclass) External::Unwrap(constructor->Get(javaClassSymbol));
-	jclass javaClass = (jclass) External::Cast(*constructor->Get(javaClassSymbol))->Value();
+	Local<External> javaClassExt = Local<External>::Cast(constructor->Get(javaClassSymbol));
+	jclass javaClass = static_cast<jclass>(javaClassExt->Value());
 
 	JNIUtil::logClassName("Create proxy: %s", javaClass);
 
@@ -475,25 +475,25 @@ Handle<Value> Proxy::proxyOnPropertiesChanged(const Arguments& args)
 
 void Proxy::dispose()
 {
-	baseProxyTemplate.Dispose();
+	baseProxyTemplate.Dispose(V8Runtime::isolate);
 	baseProxyTemplate = Persistent<FunctionTemplate>();
 
-	javaClassSymbol.Dispose();
+	javaClassSymbol.Dispose(V8Runtime::isolate);
 	javaClassSymbol = Persistent<String>();
 
-	constructorSymbol.Dispose();
+	constructorSymbol.Dispose(V8Runtime::isolate);
 	constructorSymbol = Persistent<String>();
 
-	inheritSymbol.Dispose();
+	inheritSymbol.Dispose(V8Runtime::isolate);
 	inheritSymbol = Persistent<String>();
 
-	propertiesSymbol.Dispose();
+	propertiesSymbol.Dispose(V8Runtime::isolate);
 	propertiesSymbol = Persistent<String>();
 
-	lengthSymbol.Dispose();
+	lengthSymbol.Dispose(V8Runtime::isolate);
 	lengthSymbol = Persistent<String>();
 
-	sourceUrlSymbol.Dispose();
+	sourceUrlSymbol.Dispose(V8Runtime::isolate);
 	sourceUrlSymbol = Persistent<String>();
 }
 

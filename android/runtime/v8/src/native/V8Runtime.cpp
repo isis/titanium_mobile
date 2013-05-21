@@ -33,6 +33,7 @@
 namespace titanium {
 
 Persistent<Context> V8Runtime::globalContext;
+Isolate* V8Runtime::isolate;
 Persistent<Object> V8Runtime::krollGlobalObject;
 Persistent<Array> V8Runtime::moduleContexts;
 
@@ -44,7 +45,7 @@ bool V8Runtime::DBG = false;
 void V8Runtime::collectWeakRef(Persistent<Value> ref, void *parameter)
 {
 	jobject v8Object = (jobject) parameter;
-	ref.Dispose();
+	ref.Dispose(isolate);
 	JNIScope::getEnv()->DeleteGlobalRef(v8Object);
 }
 
@@ -76,8 +77,8 @@ void V8Runtime::bootstrap(Local<Object> global)
 {
 	EventEmitter::initTemplate();
 
-	krollGlobalObject = Persistent<Object>::New(Object::New());
-	moduleContexts = Persistent<Array>::New(Array::New());
+	krollGlobalObject = Persistent<Object>::New(isolate, Object::New());
+	moduleContexts = Persistent<Array>::New(isolate, Array::New());
 
 	KrollBindings::initFunctions(krollGlobalObject);
 
@@ -170,7 +171,9 @@ JNIEXPORT void JNICALL Java_org_appcelerator_kroll_runtime_v8_V8Runtime_nativeIn
 	V8Runtime::javaInstance = env->NewGlobalRef(self);
 	JNIUtil::initCache();
 
-	Persistent<Context> context = Context::New();
+	V8Runtime::isolate = Isolate::GetCurrent();
+
+	Persistent<Context> context = Persistent<Context>::New(V8Runtime::isolate, Context::New(V8Runtime::isolate)) ;
 	context->Enter();
 
 	V8Runtime::globalContext = context;
@@ -203,9 +206,11 @@ JNIEXPORT void JNICALL Java_org_appcelerator_kroll_runtime_v8_V8Runtime_nativeRu
 
 	if (moduleObject.IsEmpty()) {
 		moduleObject = Persistent<Object>::New(
+			V8Runtime::isolate,
 			V8Runtime::krollGlobalObject->Get(String::New("Module"))->ToObject());
 
 		runModuleFunction = Persistent<Function>::New(
+			V8Runtime::isolate,
 			Handle<Function>::Cast(moduleObject->Get(String::New("runModule"))));
 	}
 
@@ -325,14 +330,14 @@ JNIEXPORT void JNICALL Java_org_appcelerator_kroll_runtime_v8_V8Runtime_nativeDi
 
 			// Detach each context's global object, and dispose the context
 			wrappedContext->GetV8Context()->DetachGlobal();
-			wrappedContext->GetV8Context().Dispose();
+			wrappedContext->GetV8Context().Dispose(V8Runtime::isolate);
 		}
 
 		// KrollBindings
 		KrollBindings::dispose();
 		EventEmitter::dispose();
 
-		V8Runtime::moduleContexts.Dispose();
+		V8Runtime::moduleContexts.Dispose(V8Runtime::isolate);
 		V8Runtime::moduleContexts = Persistent<Array>();
 
 		V8Runtime::globalContext->DetachGlobal();
@@ -344,16 +349,16 @@ JNIEXPORT void JNICALL Java_org_appcelerator_kroll_runtime_v8_V8Runtime_nativeDi
 	V8Util::dispose();
 	ProxyFactory::dispose();
 
-	moduleObject.Dispose();
+	moduleObject.Dispose(V8Runtime::isolate);
 	moduleObject = Persistent<Object>();
 
-	runModuleFunction.Dispose();
+	runModuleFunction.Dispose(V8Runtime::isolate);
 	runModuleFunction = Persistent<Function>();
 
-	V8Runtime::krollGlobalObject.Dispose();
+	V8Runtime::krollGlobalObject.Dispose(V8Runtime::isolate);
 
 	V8Runtime::globalContext->Exit();
-	V8Runtime::globalContext.Dispose();
+	V8Runtime::globalContext.Dispose(V8Runtime::isolate);
 
 	// Removes the retained global reference to the V8Runtime 
 	env->DeleteGlobalRef(V8Runtime::javaInstance);

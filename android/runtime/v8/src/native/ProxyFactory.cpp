@@ -196,11 +196,15 @@ jobject ProxyFactory::createJavaProxy(jclass javaClass, Local<Object> v8Proxy, c
 
 jobject ProxyFactory::unwrapJavaProxy(const Arguments& args)
 {
+	HandleScope scope;
 	if (args.Length() != 1)
 		return NULL;
 	Local<Value> firstArgument = args[0];
 	//return firstArgument->IsExternal() ? (jobject)External::Unwrap(firstArgument) : NULL;
-	return firstArgument->IsExternal() ? (jobject)External::Cast(*(firstArgument))->Value() : NULL;
+	if (!firstArgument->IsExternal()) {
+		return NULL;
+	}
+	return static_cast<jobject>(Local<External>::Cast(firstArgument)->Value());
 }
 
 void ProxyFactory::registerProxyPair(jclass javaProxyClass, FunctionTemplate* v8ProxyTemplate, bool createDeprecated)

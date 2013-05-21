@@ -17,6 +17,7 @@ class V8Runtime
 {
 public:
 	static Persistent<Context> globalContext;
+	static Isolate* isolate;
 	static Persistent<Object> krollGlobalObject;
 	static Persistent<Array> moduleContexts;
 

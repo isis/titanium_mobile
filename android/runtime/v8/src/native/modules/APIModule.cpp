@@ -41,7 +41,7 @@ Persistent<FunctionTemplate> APIModule::constructorTemplate;
 void APIModule::Initialize(Handle<Object> target)
 {
 	HandleScope scope;
-	constructorTemplate = Persistent<FunctionTemplate>::New(FunctionTemplate::New());
+	constructorTemplate = Persistent<FunctionTemplate>::New(V8Runtime::isolate, FunctionTemplate::New());
 	DEFINE_PROTOTYPE_METHOD(constructorTemplate, "debug", logDebug);
 	DEFINE_PROTOTYPE_METHOD(constructorTemplate, "info", logInfo);
 	DEFINE_PROTOTYPE_METHOD(constructorTemplate, "warn", logWarn);
@@ -222,7 +222,7 @@ Handle<Value> APIModule::combineLogMessages(const Arguments& args, int startInde
     // object concatenations, which is a rough emulation of what the + op would
     // do in JS. Requiring the whitespace between arguments complicates matters
     // by introducing the " " token.
-    static Persistent<String> space = Persistent<String>::New(String::New(" ")); // Cache for efficiency
+    static Persistent<String> space = Persistent<String>::New(V8Runtime::isolate, String::New(" ")); // Cache for efficiency
     Local<String> message = String::Empty();
     for (int i=startIndex; i < args.Length(); i++) {
         message = String::Concat(message, String::Concat(space, args[i]->ToString()));

@@ -71,7 +71,7 @@ Java_org_appcelerator_kroll_runtime_v8_V8Function_nativeRelease
 	Persistent<Function> function = Persistent<Function>((Function*) ptr);
 
 	// Release the JS function so it can be collected.
-	function.Dispose();
+	function.Dispose(V8Runtime::isolate);
 	function.Clear();
 }
 

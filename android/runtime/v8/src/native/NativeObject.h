@@ -10,10 +10,12 @@
 #ifndef NATIVEOBJECT_H_
 #define NATIVEOBJECT_H_
 
-using namespace v8;
+//using namespace v8;
 
 #include <v8.h>
 #include <assert.h>
+
+#include "V8Runtime.h"
 
 namespace titanium {
 
@@ -31,9 +33,9 @@ public:
 	{
 		if (!handle_.IsEmpty()) {
 			assert(handle_.IsNearDeath());
-			handle_.ClearWeak();
+			handle_.ClearWeak(V8Runtime::isolate);
 			handle_->SetInternalField(0, v8::Undefined());
-			handle_.Dispose();
+			handle_.Dispose(V8Runtime::isolate);
 			handle_.Clear();
 		}
 	}
@@ -60,7 +62,7 @@ protected:
 	{
 		assert(handle_.IsEmpty());
 		assert(handle->InternalFieldCount() > 0);
-		handle_ = v8::Persistent<v8::Object>::New(handle);
+		handle_ = v8::Persistent<v8::Object>::New(V8Runtime::isolate,handle);
 		//handle_->SetPointerInInternalField(0, this);
 		handle_->SetAlignedPointerInInternalField(0, this);
 		MakeWeak();
@@ -69,8 +71,8 @@ protected:
 	inline void MakeWeak(void)
 	{
 		//handle_.MakeWeak(this, WeakCallback);
-		handle_.MakeWeak(Isolate::GetCurrent(), this, WeakCallback);
-		handle_.MarkIndependent();
+		handle_.MakeWeak(V8Runtime::isolate, this, WeakCallback);
+		handle_.MarkIndependent(V8Runtime::isolate);
 	}
 
 	/* Ref() marks the object as being attached to an event loop.
@@ -81,7 +83,7 @@ protected:
 	{
 		assert(!handle_.IsEmpty());
 		refs_++;
-		handle_.ClearWeak();
+		handle_.ClearWeak(V8Runtime::isolate);
 	}
 
 	/* Unref() marks an object as detached from the event loop.  This is its
@@ -107,7 +109,7 @@ protected:
 
 private:
 //	static void WeakCallback(v8::Persistent<v8::Value> value, void *data)
-	static void WeakCallback(Isolate* isolate, v8::Persistent<v8::Value> value, void *data)
+	static void WeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Value> value, void *data)
 	{
 		NativeObject *obj = static_cast<NativeObject*>(data);
 		assert(value == obj->handle_);

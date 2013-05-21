@@ -100,7 +100,7 @@ jobject JavaObject::getJavaObject()
 			}
 			isWeakRef_ = false;
 			//handle_.MakeWeak(this, DetachCallback);
-			handle_.MakeWeak(Isolate::GetCurrent(), this, DetachCallback);
+			handle_.MakeWeak(V8Runtime::isolate, this, DetachCallback);
 			return javaObject;
 		}
 		return ReferenceTable::getReference(refTableKey_);
@@ -156,7 +156,7 @@ void JavaObject::wrap(Handle<Object> jsObject)
 {
 	ASSERT(handle_.IsEmpty());
 	ASSERT(jsObject->InternalFieldCount() > 0);
-	handle_ = v8::Persistent<v8::Object>::New(jsObject);
+	handle_ = v8::Persistent<v8::Object>::New(V8Runtime::isolate, jsObject);
 	//handle_->SetPointerInInternalField(0, this);
 	handle_->SetAlignedPointerInInternalField(0, this);
 }
@@ -167,8 +167,8 @@ void JavaObject::attach(jobject javaObject)
 	UPDATE_STATS(0, -1);
 
 	//handle_.MakeWeak(this, DetachCallback);
-	handle_.MakeWeak(Isolate::GetCurrent(), this, DetachCallback);
-	handle_.MarkIndependent();
+	handle_.MakeWeak(V8Runtime::isolate, this, DetachCallback);
+	handle_.MarkIndependent(V8Runtime::isolate);
 
 	if (javaObject) {
 		javaObject_ = javaObject;
@@ -179,7 +179,7 @@ void JavaObject::attach(jobject javaObject)
 void JavaObject::detach()
 {
 	//handle_.MakeWeak(this, DetachCallback);
-	handle_.MakeWeak(Isolate::GetCurrent(), this, DetachCallback);
+	handle_.MakeWeak(V8Runtime::isolate, this, DetachCallback);
 
 	if (isDetached()) {
 		return;

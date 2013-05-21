@@ -201,7 +201,7 @@ bool V8Util::isNaN(Handle<Value> value)
 
 	if (isNaNFunction.IsEmpty()) {
 		Local<Value> isNaNValue = global->Get(String::NewSymbol("isNaN"));
-		isNaNFunction = Persistent<Function>::New(isNaNValue.As<Function> ());
+		isNaNFunction = Persistent<Function>::New(V8Runtime::isolate, isNaNValue.As<Function> ());
 	}
 
 	Handle<Value> args[] = { value };
@@ -212,13 +212,13 @@ bool V8Util::isNaN(Handle<Value> value)
 
 void V8Util::dispose()
 {
-	nameSymbol.Dispose();
+	nameSymbol.Dispose(V8Runtime::isolate);
 	nameSymbol = Persistent<String>();
 
-	messageSymbol.Dispose();
+	messageSymbol.Dispose(V8Runtime::isolate);
 	messageSymbol = Persistent<String>();
 
-	isNaNFunction.Dispose();
+	isNaNFunction.Dispose(V8Runtime::isolate);
 	isNaNFunction = Persistent<Function>();
 }
 
