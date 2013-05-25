@@ -304,7 +304,8 @@ Handle<FunctionTemplate> Proxy::inheritProxyTemplate(
 	inheritedTemplate->Set(javaClassSymbol, wrappedClass, PropertyAttribute(DontDelete | DontEnum));
 
 	inheritedTemplate->InstanceTemplate()->SetInternalFieldCount(kInternalFieldCount);
-	inheritedTemplate->SetClassName(className);
+    inheritedTemplate->SetHiddenPrototype(true);
+ 	inheritedTemplate->SetClassName(className);
 	inheritedTemplate->Inherit(superTemplate);
 
 	return scope.Close(inheritedTemplate);
