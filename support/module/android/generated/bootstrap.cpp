@@ -12,6 +12,7 @@
 #include <AndroidUtil.h>
 #include <KrollBindings.h>
 #include <V8Util.h>
+#include <V8Runtime.h>
 
 #include "BootstrapJS.cpp"
 #include "KrollGeneratedBindings.cpp"
@@ -24,7 +25,7 @@ static Persistent<Object> bindingCache;
 
 static Handle<Value> %(className)s_getBinding(const Arguments& args)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 
 	if (args.Length() == 0) {
 		return ThrowException(Exception::Error(String::New("%(className)s.getBinding requires 1 argument: binding")));
@@ -61,7 +62,7 @@ static Handle<Value> %(className)s_getBinding(const Arguments& args)
 
 static void %(className)s_init(Handle<Object> exports)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 
 	for (int i = 0; titanium::natives[i].name; ++i) {
 		Local<String> name = String::New(titanium::natives[i].name);
@@ -76,7 +77,7 @@ static void %(className)s_init(Handle<Object> exports)
 
 static void %(className)s_dispose()
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	if (bindingCache.IsEmpty()) {
 		return;
 	}

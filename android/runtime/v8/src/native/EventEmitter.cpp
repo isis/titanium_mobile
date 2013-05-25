@@ -29,7 +29,7 @@ Persistent<String> EventEmitter::emitSymbol;
 
 Handle<Value> EventEmitter::eventEmitterConstructor(const Arguments& args)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 
 	EventEmitter *emitter = new EventEmitter();
 	emitter->Wrap(args.This());
@@ -39,7 +39,7 @@ Handle<Value> EventEmitter::eventEmitterConstructor(const Arguments& args)
 
 void EventEmitter::initTemplate()
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	constructorTemplate = Persistent<FunctionTemplate>::New(
 		V8Runtime::isolate,
 		FunctionTemplate::New(eventEmitterConstructor));
@@ -64,7 +64,7 @@ void EventEmitter::dispose()
 
 bool EventEmitter::emit(Handle<String> event, int argc, Handle<Value> *argv)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	Handle<Value> events_v = handle_->Get(eventsSymbol);
 	if (!events_v->IsObject()) return false;
 

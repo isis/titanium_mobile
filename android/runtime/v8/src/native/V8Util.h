@@ -52,7 +52,7 @@
 	v8::Local<v8::FunctionTemplate> __callback##_TEM = \
 	v8::FunctionTemplate::New(callback, data, __callback##_SIG); \
 	templ->PrototypeTemplate()->Set(v8::String::NewSymbol(name), \
-		__callback##_TEM, PropertyAttribute(DontEnum)); \
+		__callback##_TEM, v8::PropertyAttribute(v8::DontEnum)); \
 }
 
 #define DEFINE_PROTOTYPE_METHOD(templ, name, callback) \

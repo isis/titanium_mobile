@@ -221,7 +221,7 @@ jobjectArray TypeConverter::jsArgumentsToJavaArray(const Arguments& args)
 
 jobjectArray TypeConverter::jsArgumentsToJavaArray(JNIEnv *env, const Arguments& args)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	int argCount = args.Length();
 	jobjectArray javaArgs = env->NewObjectArray(argCount, JNIUtil::objectClass, NULL);
 
@@ -817,7 +817,7 @@ jobjectArray TypeConverter::jsObjectIndexPropsToJavaArray(v8::Handle<v8::Object>
 
 jobjectArray TypeConverter::jsObjectIndexPropsToJavaArray(JNIEnv *env, v8::Handle<v8::Object> jsObject, int start, int length)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 
 	int arrayLength = length == 0 ? 0 : length - start;
 	jobjectArray javaArray = env->NewObjectArray(arrayLength, JNIUtil::objectClass, NULL);

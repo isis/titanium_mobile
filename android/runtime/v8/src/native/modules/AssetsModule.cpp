@@ -15,6 +15,7 @@
 #include "JNIUtil.h"
 #include "JSException.h"
 #include "TypeConverter.h"
+#include "V8Runtime.h"
 #include "V8Util.h"
 
 #define TAG "AssetsModule"
@@ -25,7 +26,7 @@ using namespace v8;
 
 void AssetsModule::Initialize(Handle<Object> target)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 
 	DEFINE_METHOD(target, "readAsset", readAsset);
 	DEFINE_METHOD(target, "readFile", readFile);
@@ -79,7 +80,7 @@ Handle<Value> AssetsModule::readAsset(const Arguments& args)
 
 Handle<Value> AssetsModule::readFile(const Arguments& args)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 
 	if (args.Length() == 0 || args[0]->IsNull() || args[0]->IsUndefined()) {
 		return JSException::Error("assets.readFile requires a valid filename");

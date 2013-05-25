@@ -40,7 +40,7 @@ Persistent<FunctionTemplate> APIModule::constructorTemplate;
 
 void APIModule::Initialize(Handle<Object> target)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	constructorTemplate = Persistent<FunctionTemplate>::New(V8Runtime::isolate, FunctionTemplate::New());
 	DEFINE_PROTOTYPE_METHOD(constructorTemplate, "debug", logDebug);
 	DEFINE_PROTOTYPE_METHOD(constructorTemplate, "info", logInfo);
@@ -68,7 +68,7 @@ void APIModule::Initialize(Handle<Object> target)
 
 Handle<Value> APIModule::logDebug(const Arguments& args)
 {
-    HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	String::Utf8Value message(APIModule::combineLogMessages(args));
 	APIModule::logInternal(LOG_LEVEL_DEBUG, LCAT, *message);
 	return scope.Close(Undefined());
@@ -77,7 +77,7 @@ Handle<Value> APIModule::logDebug(const Arguments& args)
 
 Handle<Value> APIModule::logInfo(const Arguments& args)
 {
-    HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	String::Utf8Value message(APIModule::combineLogMessages(args));
 	APIModule::logInternal(LOG_LEVEL_INFO, LCAT, *message);
 	return scope.Close(Undefined());
@@ -86,7 +86,7 @@ Handle<Value> APIModule::logInfo(const Arguments& args)
 
 Handle<Value> APIModule::logWarn(const Arguments& args)
 {
-    HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	String::Utf8Value message(APIModule::combineLogMessages(args));
 	APIModule::logInternal(LOG_LEVEL_WARN, LCAT, *message);
 	return scope.Close(Undefined());
@@ -95,7 +95,7 @@ Handle<Value> APIModule::logWarn(const Arguments& args)
 
 Handle<Value> APIModule::logError(const Arguments& args)
 {
-    HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	String::Utf8Value message(APIModule::combineLogMessages(args));
 	APIModule::logInternal(LOG_LEVEL_ERROR, LCAT, *message);
 	return scope.Close(Undefined());
@@ -104,7 +104,7 @@ Handle<Value> APIModule::logError(const Arguments& args)
 
 Handle<Value> APIModule::logTrace(const Arguments& args)
 {
-    HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	String::Utf8Value message(APIModule::combineLogMessages(args));
 	APIModule::logInternal(LOG_LEVEL_TRACE, LCAT, *message);
 	return scope.Close(Undefined());
@@ -113,7 +113,7 @@ Handle<Value> APIModule::logTrace(const Arguments& args)
 
 Handle<Value> APIModule::logNotice(const Arguments& args)
 {
-    HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	String::Utf8Value message(APIModule::combineLogMessages(args));
 	APIModule::logInternal(LOG_LEVEL_NOTICE, LCAT, *message);
 	return scope.Close(Undefined());
@@ -122,7 +122,7 @@ Handle<Value> APIModule::logNotice(const Arguments& args)
 
 Handle<Value> APIModule::logCritical(const Arguments& args)
 {
-    HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	String::Utf8Value message(APIModule::combineLogMessages(args));
 	APIModule::logInternal(LOG_LEVEL_CRITICAL, LCAT, *message);
 	return scope.Close(Undefined());
@@ -131,7 +131,7 @@ Handle<Value> APIModule::logCritical(const Arguments& args)
 
 Handle<Value> APIModule::logFatal(const Arguments& args)
 {
-    HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	String::Utf8Value message(args[0]);
 	APIModule::logInternal(LOG_LEVEL_FATAL, LCAT, *message);
 	return scope.Close(Undefined());
@@ -177,7 +177,7 @@ void APIModule::logInternal(int logLevel, const char *messageTag, const char *me
 
 Handle<Value> APIModule::log(const Arguments& args)
 {
-    HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	if (args.Length()  == 1) {
 		String::Utf8Value message(args[0]);
 		APIModule::logInternal(LOG_LEVEL_INFO, LCAT, *message);

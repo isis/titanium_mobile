@@ -17,6 +17,7 @@
 #include "ProxyFactory.h"
 #include "TypeConverter.h"
 #include "V8Util.h"
+#include "V8Runtime.h"
 
 #define TAG "Proxy"
 #define INDEX_NAME 0
@@ -297,7 +298,7 @@ Handle<FunctionTemplate> Proxy::inheritProxyTemplate(
 	Handle<FunctionTemplate> superTemplate, jclass javaClass,
 	Handle<String> className, Handle<Function> callback)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 
 	//Local<Value> wrappedClass = External::Wrap(javaClass);
 	Local<Value> wrappedClass = External::New(javaClass);
@@ -315,7 +316,7 @@ Handle<FunctionTemplate> Proxy::inheritProxyTemplate(
 
 Handle<Value> Proxy::proxyConstructor(const Arguments& args)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	JNIEnv *env = JNIScope::getEnv();
 	Local<Object> jsProxy = args.Holder();
 
@@ -412,7 +413,7 @@ Handle<Value> Proxy::proxyConstructor(const Arguments& args)
 
 Handle<Value> Proxy::proxyOnPropertiesChanged(const Arguments& args)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	Handle<Object> jsProxy = args.Holder();
 
 	if (args.Length() < 1 || !args[0]->IsArray()) {

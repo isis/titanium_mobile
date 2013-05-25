@@ -53,7 +53,7 @@ void KrollBindings::initFunctions(Handle<Object> exports)
 
 void KrollBindings::initNatives(Handle<Object> exports)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	for (int i = 0; natives[i].name; ++i) {
 		if (natives[i].source == kroll_native) continue;
 		Local<String> name = String::New(natives[i].name);
@@ -64,7 +64,7 @@ void KrollBindings::initNatives(Handle<Object> exports)
 
 void KrollBindings::initTitanium(Handle<Object> exports)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 	JNIEnv *env = JNIScope::getEnv();
 	if (!env) {
 		LOGE(TAG, "Couldn't initialize JNIEnv");
@@ -89,7 +89,7 @@ static Persistent<Object> bindingCache;
 
 Handle<Value> KrollBindings::getBinding(const Arguments& args)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 
 	if (args.Length() == 0 || !args[0]->IsString()) {
 		return JSException::Error("Invalid arguments to binding, expected String");
@@ -105,7 +105,7 @@ Handle<Value> KrollBindings::getBinding(const Arguments& args)
 
 Handle<Value> KrollBindings::getExternalBinding(const Arguments& args)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 
 	if (args.Length() == 0 || !args[0]->IsString()) {
 		return JSException::Error("Invalid arguments to externalBinding, expected String");
@@ -197,7 +197,7 @@ Handle<Object> KrollBindings::getBinding(Handle<String> binding)
 // clears out the module lookup cache
 void KrollBindings::dispose()
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 
 	JNIEnv *env = JNIScope::getEnv();
 	std::map<std::string, jobject>::iterator iterMods;
@@ -271,7 +271,7 @@ void KrollBindings::addExternalCommonJsModule(const char *name, jobject sourcePr
  */
 v8::Handle<v8::Value> KrollBindings::isExternalCommonJsModule(const Arguments& args)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 
 	if (args.Length() == 0 || !args[0]->IsString()) {
 		return JSException::Error("Invalid arguments to isExternalCommonJsModule, expected String");
@@ -292,7 +292,7 @@ v8::Handle<v8::Value> KrollBindings::isExternalCommonJsModule(const Arguments& a
  */
 v8::Handle<v8::Value> KrollBindings::getExternalCommonJsModule(const Arguments& args)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 
 	if (args.Length() == 0 || !args[0]->IsString()) {
 		return JSException::Error("Invalid arguments to getExternalCommonJsBinding, expected String");

@@ -17,6 +17,7 @@
 #include "Proxy.h"
 #include "ProxyFactory.h"
 #include "TypeConverter.h"
+#include "V8Runtime.h"
 #include "V8Util.h"
 
 <#if isModule>
@@ -82,6 +83,7 @@ void ${className}::dispose()
 
 Handle<FunctionTemplate> ${className}::getProxyTemplate()
 {
+	HandleScope scope(V8Runtime::isolate);
 	if (!proxyTemplate.IsEmpty()) {
 		return proxyTemplate;
 	}
@@ -90,7 +92,6 @@ Handle<FunctionTemplate> ${className}::getProxyTemplate()
 
 	<#-- Query the class for the Java proxy -->
 	javaClass = titanium::JNIUtil::findClass("${packageName?replace('.','/')}/${className}");
-	HandleScope scope;
 
 	// use symbol over string for efficiency
 	Handle<String> nameSymbol = String::NewSymbol("${proxyAttrs.name}");
@@ -213,10 +214,10 @@ Handle<FunctionTemplate> ${className}::getProxyTemplate()
 
 // Methods --------------------------------------------------------------------
 <@Proxy.listMethods ; isFirst, name, method, signature>
-Handle<Value> ${className}::${method.apiName}(const Arguments& args)
+v8::Handle<v8::Value> ${className}::${method.apiName}(const v8::Arguments& args)
 {
+	HandleScope scope(V8Runtime::isolate);
 	LOGD(TAG, "${method.apiName}()");
-	HandleScope scope;
 
 	<@Proxy.initJNIEnv/>
 	<@Proxy.initMethodID className=className name=name signature=signature logOnly=false/>
@@ -249,8 +250,8 @@ Handle<Value> ${className}::${method.apiName}(const Arguments& args)
 <#if property.get>
 Handle<Value> ${className}::getter_${name}(Local<String> property, const AccessorInfo& info)
 {
+	HandleScope scope(V8Runtime::isolate);
 	LOGD(TAG, "get ${name}");
-	HandleScope scope;
 
 	<@Proxy.initJNIEnv/>
 	<@Proxy.initMethodID className=className name=property.getMethodName signature=getSignature logOnly=false/>
@@ -276,8 +277,8 @@ Handle<Value> ${className}::getter_${name}(Local<String> property, const Accesso
 <#if property.set>
 void ${className}::setter_${name}(Local<String> property, Local<Value> value, const AccessorInfo& info)
 {
+	HandleScope scope(V8Runtime::isolate);
 	LOGD(TAG, "set ${name}");
-	HandleScope scope;
 
 	JNIEnv *env = titanium::JNIScope::getEnv();
 	if (!env) {
@@ -317,7 +318,7 @@ void ${className}::setter_${name}(Local<String> property, Local<Value> value, co
 <#if interceptor??>
 Handle<Value> ${className}::interceptor(Local<String> property, const AccessorInfo& info)
 {
-	HandleScope scope;
+	HandleScope scope(V8Runtime::isolate);
 
 	<@Proxy.initJNIEnv/>
 	<@Proxy.initMethodID className=className name=interceptor.name signature="(Ljava/lang/String;)Ljava/lang/Object;" logOnly=false/>
