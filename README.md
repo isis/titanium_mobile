@@ -1,5 +1,5 @@
 mips branch supports Ti app running on MIPS base Android device using newer V8 engine.
-needs newer V8 libraries which are made from  [isis / v8_titanium](https://github.com/isis/v8_titanium) gyp branch.
+needs newer V8 libraries which are made from  [isis / v8_titanium gyp branch](https://github.com/isis/v8_titanium/tree/gyp) .
 
 Appcelerator Titanium Mobile  
 ============================
