@@ -72,7 +72,7 @@ void ${className}::dispose()
 {
 	LOGD(TAG, "dispose()");
 	if (!proxyTemplate.IsEmpty()) {
-		proxyTemplate.Dispose(V8Runtime::isolate);
+		proxyTemplate.Dispose(titanium:: V8Runtime::isolate);
 		proxyTemplate = Persistent<FunctionTemplate>();
 	}
 
@@ -83,7 +83,7 @@ void ${className}::dispose()
 
 Handle<FunctionTemplate> ${className}::getProxyTemplate()
 {
-	HandleScope scope(V8Runtime::isolate);
+	HandleScope scope(titanium:: V8Runtime::isolate);
 	if (!proxyTemplate.IsEmpty()) {
 		return proxyTemplate;
 	}
@@ -103,7 +103,7 @@ Handle<FunctionTemplate> ${className}::getProxyTemplate()
 		titanium::Proxy::baseProxyTemplate
 	</#if>, javaClass, nameSymbol);
 
-	proxyTemplate = Persistent<FunctionTemplate>::New(V8Runtime::isolate, t);
+	proxyTemplate = Persistent<FunctionTemplate>::New(titanium:: V8Runtime::isolate, t);
 	proxyTemplate->Set(titanium::Proxy::inheritSymbol,
 		FunctionTemplate::New(titanium::Proxy::inherit<${className}>)->GetFunction());
 
@@ -216,7 +216,7 @@ Handle<FunctionTemplate> ${className}::getProxyTemplate()
 <@Proxy.listMethods ; isFirst, name, method, signature>
 v8::Handle<v8::Value> ${className}::${method.apiName}(const v8::Arguments& args)
 {
-	HandleScope scope(V8Runtime::isolate);
+	HandleScope scope(titanium:: V8Runtime::isolate);
 	LOGD(TAG, "${method.apiName}()");
 
 	<@Proxy.initJNIEnv/>
@@ -250,7 +250,7 @@ v8::Handle<v8::Value> ${className}::${method.apiName}(const v8::Arguments& args)
 <#if property.get>
 Handle<Value> ${className}::getter_${name}(Local<String> property, const AccessorInfo& info)
 {
-	HandleScope scope(V8Runtime::isolate);
+	HandleScope scope(titanium:: V8Runtime::isolate);
 	LOGD(TAG, "get ${name}");
 
 	<@Proxy.initJNIEnv/>
@@ -277,7 +277,7 @@ Handle<Value> ${className}::getter_${name}(Local<String> property, const Accesso
 <#if property.set>
 void ${className}::setter_${name}(Local<String> property, Local<Value> value, const AccessorInfo& info)
 {
-	HandleScope scope(V8Runtime::isolate);
+	HandleScope scope(titanium:: V8Runtime::isolate);
 	LOGD(TAG, "set ${name}");
 
 	JNIEnv *env = titanium::JNIScope::getEnv();
@@ -318,7 +318,7 @@ void ${className}::setter_${name}(Local<String> property, Local<Value> value, co
 <#if interceptor??>
 Handle<Value> ${className}::interceptor(Local<String> property, const AccessorInfo& info)
 {
-	HandleScope scope(V8Runtime::isolate);
+	HandleScope scope(titanium:: V8Runtime::isolate);
 
 	<@Proxy.initJNIEnv/>
 	<@Proxy.initMethodID className=className name=interceptor.name signature="(Ljava/lang/String;)Ljava/lang/Object;" logOnly=false/>

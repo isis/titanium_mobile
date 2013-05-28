@@ -25,14 +25,14 @@ static Persistent<Object> bindingCache;
 
 static Handle<Value> %(className)s_getBinding(const Arguments& args)
 {
-	HandleScope scope(V8Runtime::isolate);
+	HandleScope scope(titanium::V8Runtime::isolate);
 
 	if (args.Length() == 0) {
 		return ThrowException(Exception::Error(String::New("%(className)s.getBinding requires 1 argument: binding")));
 	}
 
 	if (bindingCache.IsEmpty()) {
-		bindingCache = Persistent<Object>::New(Object::New());
+		bindingCache = Persistent<Object>::New(titanium::V8Runtime::isolate, Object::New());
 	}
 
 	Handle<String> binding = args[0]->ToString();
@@ -62,7 +62,7 @@ static Handle<Value> %(className)s_getBinding(const Arguments& args)
 
 static void %(className)s_init(Handle<Object> exports)
 {
-	HandleScope scope(V8Runtime::isolate);
+	HandleScope scope(titanium::V8Runtime::isolate);
 
 	for (int i = 0; titanium::natives[i].name; ++i) {
 		Local<String> name = String::New(titanium::natives[i].name);
@@ -77,7 +77,7 @@ static void %(className)s_init(Handle<Object> exports)
 
 static void %(className)s_dispose()
 {
-	HandleScope scope(V8Runtime::isolate);
+	HandleScope scope(titanium::V8Runtime::isolate);
 	if (bindingCache.IsEmpty()) {
 		return;
 	}

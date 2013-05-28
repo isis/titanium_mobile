@@ -188,7 +188,7 @@ jobject TypeConverter::jsObjectToJavaFunction(v8::Handle<v8::Object> jsObject)
 
 jobject TypeConverter::jsObjectToJavaFunction(JNIEnv *env, v8::Handle<v8::Object> jsObject)
 {
-	Persistent<Function> jsFunction = Persistent<Function>::New(V8Runtime::isolate, Handle<Function>::Cast(jsObject));
+	v8::Persistent<v8::Function> jsFunction = v8::Persistent<v8::Function>::New(V8Runtime::isolate, v8::Handle<v8::Function>::Cast(jsObject));
 	jsFunction.MarkIndependent(V8Runtime::isolate);
 
 	jlong ptr = (jlong) *jsFunction;
@@ -210,7 +210,7 @@ v8::Handle<v8::Function> TypeConverter::javaObjectToJsFunction(JNIEnv *env, jobj
 	return v8::Handle<v8::Function>(reinterpret_cast<v8::Function*>(v8ObjectPointer));
 }
 
-jobjectArray TypeConverter::jsArgumentsToJavaArray(const Arguments& args)
+jobjectArray TypeConverter::jsArgumentsToJavaArray(const v8::Arguments& args)
 {
 	JNIEnv *env = JNIScope::getEnv();
 	if (!env) {
@@ -219,15 +219,15 @@ jobjectArray TypeConverter::jsArgumentsToJavaArray(const Arguments& args)
 	return TypeConverter::jsArgumentsToJavaArray(env, args);
 }
 
-jobjectArray TypeConverter::jsArgumentsToJavaArray(JNIEnv *env, const Arguments& args)
+jobjectArray TypeConverter::jsArgumentsToJavaArray(JNIEnv *env, const v8::Arguments& args)
 {
-	HandleScope scope(V8Runtime::isolate);
+	v8::HandleScope scope(V8Runtime::isolate);
 	int argCount = args.Length();
 	jobjectArray javaArgs = env->NewObjectArray(argCount, JNIUtil::objectClass, NULL);
 
 	for (int i = 0; i < argCount; ++i)
 	{
-		Local<Value> v8Arg = args[i];
+		v8::Local<v8::Value> v8Arg = args[i];
 		bool isNew;
 		jobject javaArg = jsValueToJavaObject(v8Arg, &isNew);
 		env->SetObjectArrayElement(javaArgs, i, javaArg);
@@ -578,7 +578,7 @@ jobject TypeConverter::jsValueToJavaObject(JNIEnv *env, v8::Local<v8::Value> jsV
 		return TypeConverter::jsStringToJavaString(env, jsValue->ToString());
 
 	} else if (jsValue->IsDate()) {
-		Local<Date> date = Local<Date>::Cast<Value>(jsValue);
+		v8::Local<v8::Date> date = v8::Local<v8::Date>::Cast<v8::Value>(jsValue);
 		return TypeConverter::jsDateToJavaDate(env, date);
 
 	} else if (jsValue->IsArray()) {
@@ -651,7 +651,7 @@ jobject TypeConverter::jsValueToJavaError(JNIEnv *env, v8::Local<v8::Value> jsVa
 		// If it's a java object, we just return null for now.
 		if (!JavaObject::isJavaObject(jsObject)) {
 
-			Handle<String> stackString = String::New("stack"), messageString = String::New("message");
+			v8::Handle<v8::String> stackString = v8::String::New("stack"), messageString = v8::String::New("message");
 			if (jsObject->HasOwnProperty(stackString) || jsObject->HasOwnProperty(messageString)) {
 				bool keyIsNew, valueIsNew;
 				*isNew = true;
@@ -760,7 +760,7 @@ v8::Handle<v8::Value> TypeConverter::javaObjectToJsValue(JNIEnv *env, jobject ja
 			env->DeleteLocalRef(krollObject);
 
 			if (v8ObjectPointer != 0) {
-				Persistent<Object> v8Object = Persistent<Object>((Object *) v8ObjectPointer);
+				v8::Persistent<v8::Object> v8Object = v8::Persistent<v8::Object>((v8::Object *) v8ObjectPointer);
 				JavaObject *jo = NativeObject::Unwrap<JavaObject>(v8Object);
 				jo->getJavaObject();
 				return v8Object;
@@ -817,14 +817,14 @@ jobjectArray TypeConverter::jsObjectIndexPropsToJavaArray(v8::Handle<v8::Object>
 
 jobjectArray TypeConverter::jsObjectIndexPropsToJavaArray(JNIEnv *env, v8::Handle<v8::Object> jsObject, int start, int length)
 {
-	HandleScope scope(V8Runtime::isolate);
+	v8::HandleScope scope(V8Runtime::isolate);
 
 	int arrayLength = length == 0 ? 0 : length - start;
 	jobjectArray javaArray = env->NewObjectArray(arrayLength, JNIUtil::objectClass, NULL);
 	int index = 0;
 
 	for (int index = start; index < length; ++index) {
-		v8::Local<Value> prop = jsObject->Get(index);
+		v8::Local<v8::Value> prop = jsObject->Get(index);
 		bool isNew;
 
 		jobject javaObject = jsValueToJavaObject(prop, &isNew);

@@ -10,21 +10,19 @@
 #include <jni.h>
 #include <v8.h>
 
-using namespace v8;
-
 namespace titanium {
 class V8Runtime
 {
 public:
-	static Persistent<Context> globalContext;
-	static Isolate* isolate;
-	static Persistent<Object> krollGlobalObject;
-	static Persistent<Array> moduleContexts;
+	static v8::Persistent<v8::Context> globalContext;
+	static v8::Isolate* isolate;
+	static v8::Persistent<v8::Object> krollGlobalObject;
+	static v8::Persistent<v8::Array> moduleContexts;
 
 	static jobject javaInstance;
 
-	static void collectWeakRef(Persistent<Value> ref, void *parameter);
-	static void bootstrap(Local<Object> global);
+	static void collectWeakRef(v8::Persistent<v8::Value> ref, void *parameter);
+	static void bootstrap(v8::Local<v8::Object> global);
 
 	static bool debuggerEnabled;
 	static bool DBG;
