@@ -1,0 +1,280 @@
+<project name="convert">
+	<property name="ti.module.root" location="${basedir}"/>
+    <property file="${ti.module.root}/build.properties"/>
+
+	<property name="ti.module.support.dir" location="${titanium.platform}/../module"/>
+
+	<property name="src" location="${ti.module.root}/src"/>
+	<property name="build" location="${ti.module.root}/build"/>
+	<property name="gen" location="${build}/generated"/>
+	<property name="libs" location="${ti.module.root}/libs"/>
+	<property name="dist" location="${ti.module.root}/dist"/>
+
+	<property name="genjni" location="${build}/generated/jni"/>
+
+	<path id="project.classpath">
+<!--		<fileset dir="${lib}">
+			<include name="**/*.jar"/>
+		</fileset> -->
+		<fileset dir="${titanium.platform}">
+			<include name="*.jar"/>
+			<include name="modules/titanium-*.jar"/>
+		</fileset>
+		<pathelement path="${android.jar}"/>
+		<pathelement path="${google.apis}/libs/maps.jar"/>
+	</path>
+
+	<taskdef classname="org.appcelerator.titanium.ant.StringTask" name="ti.string" classpath="${ti.module.support.dir}/android/ant-tasks.jar"/>
+	<taskdef resource="net/sf/antcontrib/antlib.xml">
+		<classpath>
+			<pathelement location="${ti.module.support.dir}/android/ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
+
+	<target name="python.set.exec">
+		<property name="python.bat" location="${titanium.platform}/../python.bat"/>
+		<condition property="python.exec" value="${python.bat}" else="python">
+			<os family="windows"/>
+		</condition>
+	</target>
+
+	<target name="python.check" depends="python.set.exec">
+		<echo>Testing for Python</echo>
+		<exec failonerror="true" executable="${python.exec}">
+			<arg line="--version"/>
+		</exec>
+	</target>
+	
+	<macrodef name="python">
+		<attribute name="file"/>
+		<element name="args" implicit="true" optional="true"/>
+		<sequential>
+			<exec executable="${python.exec}" dir="${basedir}">
+				<env key="ANT_HOME" file="${ant.home}"/>
+				<arg value="@{file}"/>
+				<args/>
+			</exec>
+		</sequential>
+	</macrodef>
+
+	<target name="init" depends="python.check">
+		<mkdir dir="${gen}"/>
+		<mkdir dir="${dist}"/>
+	</target>
+
+    <target name="unzip.module" depends="init">
+        <unzip dest="${gen}/" overwrite="true">
+            <fileset dir="${ti.module.root}/">
+                <filename name="**/*.zip"/>
+            </fileset>
+        </unzip>
+	   <loadproperties prefix="manifest">
+            <fileset dir="${gen}/modules">
+              <filename name="**/manifest" />
+            </fileset>
+        </loadproperties>
+        <property name="srcdir.zip" location="${gen}/modules/android/${manifest.moduleid}/${manifest.version}"/>
+    </target>
+
+    <target name="unjar.module" depends="unzip.module" description="">
+        <property name="module.jar" location="${srcdir.zip}/${manifest.name}.jar"/>
+        <unjar src="${module.jar}" dest="${gen}/jar/" overwrite="true" />
+    </target>
+
+	<macrodef name="generate.runtime.bindings" description="">
+		<attribute name="outdir"/>
+		<sequential>
+            <echo>outdir is @{outdir}</echo>
+			<java classname="org.appcelerator.kroll.annotations.generator.KrollBindingGenerator" classpathref="project.classpath">
+				<!-- output directory -->
+				<arg value="@{outdir}"/>
+				<!-- isModule -->
+				<arg value="true"/>
+				<!-- modulePackage -->
+				<arg value="${manifest.moduleid}"/>
+				<!-- binding json -->
+				<arg value="${gen}/jar/org/appcelerator/titanium/bindings/${manifest.name}.json"/>
+			</java>
+		</sequential>
+	</macrodef>
+
+	<target name="generate.v8.bindings" description="">
+		<generate.runtime.bindings outdir="${genjni}"/>
+		<property name="bootstrap.py" location="${ti.module.support.dir}/android/bootstrap.py"/>
+		<property name="js2c.py" location="${ti.module.support.dir}/android/js2c.py"/>
+
+		<python file="${bootstrap.py}">
+			<!-- module id -->
+			<arg value="${manifest.moduleid}"/>
+			<!-- module name -->
+			<arg value="${ant.project.name}"/>
+			<!-- binding json -->
+			<arg value="${gen}/jar/org/appcelerator/titanium/bindings/${manifest.name}.json"/>
+			<!-- output dir -->
+			<arg value="${gen}"/>
+		</python>
+	</target>
+
+	<target name="generate.bindings" depends="unjar.module,generate.v8.bindings">
+	</target>
+
+	<macrodef name="check.ndk">
+		<sequential>
+			<property environment="env"/>
+			<fail message="Neither the ANDROID_NDK environment variable, or the android.ndk property is not set to an existing Android NDK installation (check your module's build.properties). ">
+				<condition>
+					<not>
+						<or>
+							<available file="${android.ndk}" type="dir"/>
+							<available file="${env.ANDROID_NDK}" type="dir"/>
+						</or>
+					</not>
+				</condition>
+			</fail>
+			<condition property="ndk.path" value="${android.ndk}" else="${env.ANDROID_NDK}">
+				<isset property="android.ndk"/>
+			</condition>
+		</sequential>
+	</macrodef>
+	
+	<macrodef name="build.ndk">
+		<attribute name="gendir"/>
+		<sequential>
+			<condition property="ndk.build" 
+				value="${ndk.path}/ndk-build.cmd" 
+				else="${ndk.path}/ndk-build">
+				<os family="windows"/>
+			</condition>
+			
+			<property name="mobilesdk.dir" location="${titanium.platform}/.."/>
+			<property name="ndk.verbose" value="0"/>
+			<propertyregex property="user.name.nospaces" input="${user.name}" regexp=" " replace="_" global="true" defaultValue="${user.name}"/>
+			<property name="tmpdir" value="${java.io.tmpdir}/${user.name.nospaces}/${ant.project.name}-generated" />
+
+			<mkdir dir="${tmpdir}" />
+			<copy todir="${tmpdir}" preservelastmodified="true" overwrite="true" includeEmptyDirs="true">
+				<fileset dir="@{gendir}"/>
+			</copy>
+			<exec executable="${ndk.build}" dir="${tmpdir}" failonerror="true">
+				<arg value="TI_MOBILE_SDK=${mobilesdk.dir}"/>
+				<arg value="NDK_PROJECT_PATH=${tmpdir}"/>
+				<arg value="NDK_APPLICATION_MK=${tmpdir}/Application.mk"/>
+				<arg value="PYTHON=${python.exec}"/>
+				<arg value="V=${ndk.verbose}"/>
+			</exec>
+
+			<move todir="@{gendir}" preservelastmodified="true" overwrite="true" includeEmptyDirs="true">
+				<fileset dir="${tmpdir}"/>
+			</move>
+		</sequential>
+	</macrodef>
+	
+	<target name="ndk.build">
+		<check.ndk/>
+
+		<mkdir dir="${genjni}"/>
+		<property name="module.generated.dir"
+			location="${titanium.platform}/../module/android/generated"/>
+
+		<ti.string property="class.rhs"
+			string="${ant.project.name}" substring="1"/>
+		<ti.string property="class.lhs1"
+			string="${ant.project.name}" substring="0:1"/>
+		<ti.string property="class.lhs2"
+			string="${class.lhs1}" touppercase="true"/>
+		<property name="module.classname" value="${class.lhs2}${class.rhs}"/>
+
+		<filterset id="ndk.filter">
+			<filter token="MODULE_ID" value="${manifest.moduleid}"/>
+			<filter token="MODULE_NAME" value="${ant.project.name}"/>
+			<filter token="CLASS_NAME" value="${module.classname}"/>
+		</filterset>
+
+		<copy todir="${gen}"
+			file="${module.generated.dir}/Application.mk">
+			<filterset refid="ndk.filter"/>
+		</copy>
+
+		<copy todir="${genjni}"
+			file="${module.generated.dir}/Android.mk">
+			<filterset refid="ndk.filter"/>
+		</copy>
+		
+		<build.ndk gendir="${gen}"/>
+
+		<copy todir="${libs}">
+			<fileset dir="${gen}/libs">
+				<include name="**/*"/>
+				<exclude name="**/libstlport_shared.so"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="libs.check">
+		<condition property="libs.exists">
+			<available file="${libs}" type="dir"/>
+		</condition>
+	</target>
+
+    <target name="zip.libs" depends="libs.check" if="libs.exists">
+		<zip destfile="${dist}/${module.id}-android-${manifest.version}.zip" update="true">
+			<zipfileset dir="${libs}" prefix="${zip.prefix}/libs">
+				<include name="**/*.so"/>
+			</zipfileset>
+		</zip>
+	</target>
+	
+	<target name="ndk.clean">
+		<delete includeemptydirs="true" failonerror="false">
+			<fileset dir="${libs}" includes="**/*"/>
+		</delete>
+	</target>
+
+	<target name="lib.check">
+		<condition property="lib.exists">
+			<available file="${srcdir.zip}/lib" type="dir"/>
+		</condition>
+	</target>
+
+    <target name="zip.lib" depends="lib.check" if="lib.exists">
+		<zip destfile="${dist}/${module.id}-android-${manifest.version}.zip" update="true">
+			<zipfileset dir="${srcdir.zip}/lib" prefix="${zip.prefix}/lib">
+				<include name="**/*.jar"/>
+			</zipfileset>
+		</zip>
+	</target>
+
+	<target name="pre.dist">
+	</target>
+
+	<target name="dist" depends="generate.bindings,ndk.build,pre.dist" description="">
+		<ti.string property="module.id" string="${manifest.moduleid}" tolowercase="true"/>
+		<property name="zip.prefix" value="modules/android/${module.id}/${manifest.version}"/>
+
+		<zip destfile="${dist}/${module.id}-android-${manifest.version}.zip">
+			<zipfileset file="${module.jar}" prefix="${zip.prefix}"/>
+			<zipfileset file="${srcdir.zip}/manifest" prefix="${zip.prefix}"/>
+			<zipfileset file="${srcdir.zip}/timodule.xml" prefix="${zip.prefix}"/>
+			<zipfileset dir="${srcdir.zip}/documentation/" prefix="${zip.prefix}/documentation"/>
+			<zipfileset dir="${srcdir.zip}" includes="platform/**" excludes="platform/README" prefix="${zip.prefix}"/>
+			<zipfileset dir="${srcdir.zip}" includes="LICENSE" prefix="${zip.prefix}"/>
+			<zipfileset dir="${srcdir.zip}" includes="example/**" prefix="${zip.prefix}"/>
+		</zip>
+		<antcall target="zip.lib"/>
+		<antcall target="zip.libs"/>
+
+		<delete dir="${lib.expand.dir}" includeemptydirs="true" failonerror="false" deleteonexit="true"/>
+		<antcall target="post.dist"/>
+    </target>
+    
+	<target name="post.dist">
+		<antcall target="cleanwork"/>
+	</target>
+    
+    <target name="cleanwork" description="Cleans works" depends="ndk.clean">
+		<delete includeemptydirs="true" failonerror="false">
+			<fileset dir="${gen}" includes="**/*"/>
+		</delete>
+	</target>
+
+</project>
